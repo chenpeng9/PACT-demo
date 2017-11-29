@@ -1,0 +1,72 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.8.RELEASE")
+        classpath 'au.com.dius:pact-jvm-provider-gradle_2.12:3.5.10'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'au.com.dius.pact'
+
+jar {
+    baseName = 'pact-Consumer'
+    version =  '1.0.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+group 'com.peng'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework:spring-web")
+    compile("com.fasterxml.jackson.core:jackson-databind")
+    testCompile("io.rest-assured:rest-assured:3.0.5")
+    testCompile("junit:junit")
+    testCompile("au.com.dius:pact-jvm-consumer-junit_2.12:3.5.10")
+//    testCompile("au.com.dius:pact-jvm-consumer-java8_2.12:3.5.10")
+}
+
+
+pact {
+    publish {
+        pactDirectory = 'target/pacts'
+        pactBrokerUrl = 'http://localhost:8888'
+    }
+
+    serviceProviders {
+
+        // You can define as many as you need, but each must have a unique name
+        Provider {
+            // All the provider properties are optional, and have sensible defaults (shown below)
+            protocol = 'https'
+            host = 'www.googleapis.com'
+            port = 443
+//            path = "/books/v1/volumes"
+
+            // Again, you can define as many consumers for each provider as you need, but each must have a unique name
+            hasPactWith('consumer') {
+                // currently supports a file path using file() or a URL using url()
+                pactFile = file('target/pacts/consumer-googleBookApi.json')
+            }
+
+        }
+
+    }
+}
+
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.13'
+}
